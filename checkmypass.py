@@ -1,5 +1,6 @@
 import requests
 import hashlib  # This Built in module can do SHA1 Hashing.
+import sys
 
 # Initially It gives <Response [400]> , Which means unauthorized or something is not right with the api.
 # url = 'https://api.pwnedpasswords.com/range/' + 'password123'
@@ -31,10 +32,13 @@ def request_api_data(query_char):
 # with the response given by request_api_data(). We wanna check our original password. i.e = password123
 
 
+# This function returns the count of password leaks.
 def get_password_leaks_count(hashes, hash_to_check):
     hashes = (line.split(':') for line in hashes.text.splitlines())
     for h, count in hashes:
-        print(h, count)
+        if h == hash_to_check:
+            return count
+    return 0
 
 
 # This function converts our password to sha1.
@@ -61,9 +65,20 @@ def pwned_api_check(password):
     # now we can call the request_api_data by
     response = request_api_data(first5_char)
     # print(first5_char, tail)
-    print(response)
+    # print(response)
     # return sha1password
     return get_password_leaks_count(response, tail)
 
 
-pwned_api_check('123')
+def main(args):
+    for password in args:
+        count = pwned_api_check(password)
+        if count:
+            print(
+                f'{password} was found {count} times... you should probably change your password.')
+        else:
+            print(f'{password} was NOT found. Carry on! All good...')
+    return 'done'
+
+
+main(sys.argv[1:])
