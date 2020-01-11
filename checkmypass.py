@@ -81,4 +81,7 @@ def main(args):
     return 'done'
 
 
-main(sys.argv[1:])
+# If this checkmypass is the main file to be run from terminal then only main() will be called.
+if __main__ == '__main__':
+    # Exiting the file and so we get the return value 'done'
+    sys.exit(main(sys.argv[1:]))
