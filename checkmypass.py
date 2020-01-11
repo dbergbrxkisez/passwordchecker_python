@@ -23,6 +23,7 @@ def request_api_data(query_char):
     if res.status_code != 200:
         raise RuntimeError(
             f'Error fetching: {res.status_code}, check the api and try again.')
+    return res
 
 # Gives Runtime error because the given value is not hashed. Api only responds if the value is hashed.
 # request_api_data('123')
@@ -30,20 +31,39 @@ def request_api_data(query_char):
 # with the response given by request_api_data(). We wanna check our original password. i.e = password123
 
 
+def get_password_leaks_count(hashes, hash_to_check):
+    hashes = (line.split(':') for line in hashes.text.splitlines())
+    for h, count in hashes:
+        print(h, count)
+
+
+# This function converts our password to sha1.
 def pwned_api_check(password):
     # check password if it exists in API response
     # First hash the password here.
+
     # if we just do ```print(password.encode('utf-8'))``` .       It's encoded in utf-8 as b'123'
     # print(password.encode('utf-8'))
+
     # if we add ```hashlib.sha1(password.encode('utf-8'))``` .    We get <sha1 HASH object @ 0x1067ff9e0>
     # print(hashlib.sha1(password.encode('utf-8')))
+
     # if we add .hexdigit() to the ```hashlib.sha1(password.encode('utf-8'))``` .   We can convert the object to Hexadecimal.
     # print(hashlib.sha1(password.encode('utf-8')).hexdigest())
+
     # if we need to agree with the api then we need to do convert this hexadecimal value to uppercase by using .upper()
     # we get the complete SHA1 encoded Hash of the given password string.
     # print(hashlib.sha1(password.encode('utf-8')).hexdigest().upper())
+
     sha1password = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
-    return sha1password
+    # We only need the first 5 characters for the api. So we use string slicing for it.
+    first5_char, tail = sha1password[:5], sha1password[5:]
+    # now we can call the request_api_data by
+    response = request_api_data(first5_char)
+    # print(first5_char, tail)
+    print(response)
+    # return sha1password
+    return get_password_leaks_count(response, tail)
 
 
-print(pwned_api_check('123'))
+pwned_api_check('123')
